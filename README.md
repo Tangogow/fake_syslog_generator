@@ -18,10 +18,11 @@ Another purpose is to benchmark your network and/or your on premise infrastructu
 # How to start
 
 1. Configure the number of logs, logs per second (minimum 1) and logs size (in bytes) in the Dockerfile
-2. Build the image with `docker build -t flg .`
+2. Create Docker network with `docker network create --gateway 172.0.255.254 --label gll --subnet 172.0.0.0/16`
+2. Build the image with `docker build -t gll .`
 3. Launch your Docker cluster with
-3. Connect all your containers with your SIEM 
-4. You can attach a tty to any individual container with `docker attach flg1`
+3. Connect all your containers with your SIEM
+4. You can attach a tty to any individual container with `docker attach gll1`
 
 # Limitation
 
