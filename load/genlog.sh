@@ -5,7 +5,7 @@ if [[ $# -ne 3 ]]; then
   echo "You may be restricted by the number of logs per second, depending on your OS and disk IO's"
   echo "logs_per_second: in seconds (minimum 1)"
   echo "log_size: in bytes for each log entry"
-  exit 1
+  exit 
 fi
 
 # trap Ctrl+C to display report
@@ -29,9 +29,9 @@ function report {
     total_size=$(($logs_generated * $log_size))
     if [ $total_size -lt 1024 ]; then
         total_size=$total_size" B"
-    elif [ $total_size -lt 1048576 ];
+    elif [ $total_size -lt 1048576 ]; then
         total_size=$((total_size / 1024))" KB"
-    elif [ $total_size -lt 1073741824 ];
+    elif [ $total_size -lt 1073741824 ]; then
         total_size=$((total_size / 1048576))" MB"
     else
         total_size=$((total_size / 1073741824))" GB"
