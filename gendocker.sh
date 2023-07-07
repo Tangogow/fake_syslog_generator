@@ -160,6 +160,6 @@ for (( i=rangeMin; i<=rangeMax; i++ )); do
         echo "Generating logs in container $name$i"
     fi
 done
-if [[$action == "run" || $action == "create" ]]; then
+if [[ $action == "run" || $action == "create" ]]; then
     docker ps
 fi
