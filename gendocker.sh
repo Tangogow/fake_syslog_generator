@@ -9,8 +9,9 @@ logPerSecond=$5
 logSize=$6
 
 ip="172.0.0."
-name="gwl"
-image="gwl"
+name="gll"
+image="gll"
+network="gll"
 eventApp="MyApp" 
 volume="/var/lib/docker/volumes/logs/_data"
 
@@ -135,21 +136,21 @@ for (( i=rangeMin; i<=rangeMax; i++ )); do
         docker restart $name$i
         echo "Container $name$i restarted"
     elif [[ $action == "rm" ]]; then
-        docker kill $name$i
-        docker rm $name$i
+        docker kill $name$i 2> /dev/null
+        docker rm $name$i 2> /dev/null
         echo "Container $name$i removed"
     elif [[ $action == "create" ]]; then
-        docker create --name $name$i --ip $ip$i -v logs:/logs --network gwl -e NAME=$name$i -ti $image
+        docker create --name $name$i --ip $ip$i -v logs:/logs --network $network -e NAME=$name$i -ti $image
         echo "Container $name$i created"
     elif [[ $action == "recreate" ]]; then
-        docker kill $name$i
-        docker rm $name$i
-        docker run --name $name$i --ip $ip$i -v logs:/logs --network gwl -e NAME=$name$i -tid $image
+        docker kill $name$i 2> /dev/null
+        docker rm $name$i 2> /dev/null
+        docker run --name $name$i --ip $ip$i -v logs:/logs --network $network -e NAME=$name$i -tid $image
         echo "Container $name$i recreated"
     elif [[ $action == "run" ]]; then
-        docker kill $name$i
-        docker rm $name$i
-        docker run --name $name$i --ip $ip$i -v logs:/logs --network gwl -e NAME=$name$i -tid $image
+        docker kill $name$i 2> /dev/null
+        docker rm $name$i 2> /dev/null
+        docker run --name $name$i --ip $ip$i -v logs:/logs --network $network -e NAME=$name$i -tid $image
         echo "Container $name$i created and running"
     elif [[ $action == "exec" ]]; then
         docker exec -d $name$i bash -c "$execCommand"

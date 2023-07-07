@@ -5,7 +5,7 @@ if [[ $# -ne 3 ]]; then
   echo "You may be restricted by the number of logs per second, depending on your OS and disk IO's"
   echo "logs_per_second: in seconds (minimum 1)"
   echo "log_size: in bytes for each log entry"
-  exit 
+  exit 1
 fi
 
 # trap Ctrl+C to display report
