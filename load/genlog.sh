@@ -11,6 +11,8 @@ fi
 # trap Ctrl+C to display report
 trap ctrl_c INT
 
+service rsyslog start 
+
 number_of_logs=$1
 logs_per_second=$2
 log_size=$3
