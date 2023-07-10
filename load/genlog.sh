@@ -11,7 +11,7 @@ fi
 # trap Ctrl+C to display report
 trap ctrl_c INT
 
-service rsyslog start 
+service rsyslog start || rsyslogd # forcing
 
 number_of_logs=$1
 logs_per_second=$2
