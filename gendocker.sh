@@ -11,18 +11,17 @@ logSize=$6
 ip="172.0.0."
 name="gll"
 image="gll"
-network="gll"
-eventApp="MyApp" 
+network="gll" 
 volume="/var/lib/docker/volumes/logs/_data"
 
-usage () {
+function usage {
     echo "
 Usage: ./gendocker.sh <start|stop|restart|create|rm|recreate|run|exec|gen|logs> <rangemin> <rangemax> [<number_of_logs> <logs_per_seconde> <size_of_logs>]
 Example: 
     ./gendocker.sh run 1 20                   Create and start 20 containers
     ./gendocker.sh gen 1 20 10000 100 100     Generate 10000 logs of 100 bytes at the rate of 100 logs/s on each container
     ./gendocker.sh logs 1 20                  Wait for the logs to come and report.
-    
+
 Other command:
     ./gendocker.sh rm 1 20                    Kill and remove containers
     ./gendocker.sh restart 1 10               Restart the container from 1 to 10
@@ -64,7 +63,7 @@ realLogsPerSecond=0
 totalSizeBytes=0
 durationSecs=0
 
-formatDuration () {
+function formatDuration {
     seconds=$1
     if [[ $seconds -lt 60 ]]; then
         echo "$seconds secs"
@@ -77,7 +76,7 @@ formatDuration () {
     fi
 }
 
-formatSize () {
+function formatSize {
     totalSize=$1
     if [[ $totalSize -lt 1024 ]]; then
         echo "$totalSize B"
@@ -93,7 +92,7 @@ formatSize () {
     fi
 }
 
-round () {
+function round {
     printf "%.0f" $1
 }
 
@@ -156,7 +155,7 @@ for (( i=rangeMin; i<=rangeMax; i++ )); do
         docker exec -d $name$i bash -c "$execCommand"
         echo "Command $execCommand injected in container $name$i"
     elif [[ $action == "gen" ]]; then
-        docker exec -d $name$i bash -c "./genlog.sh $eventApp $logNumber $logPerSecond $logSize"
+        docker exec -d $name$i bash -c "./genlog.sh $logNumber $logPerSecond $logSize"
         echo "Generating logs in container $name$i"
     fi
 done

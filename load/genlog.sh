@@ -51,8 +51,7 @@ function ctrl_c {
 
 start_time=$(date +%s)
 logger -t FAKE -p user.info "===========FAKE LOGS============="
-# Generate a fake syslog entry
-generate_log_entry() {
+function generate_log_entry {
   local message=""
   local current_length=0
 
@@ -66,7 +65,6 @@ generate_log_entry() {
   logger -t FAKE -p user.info "$message"
 }
 
-# Calculate sleep duration based on logs per second
 sleep_duration=$(awk "BEGIN {print 1/$logs_per_second}")
 
 # Generate logs until the desired number is reached
@@ -75,12 +73,11 @@ while [[ "$logs_generated" -lt "$number_of_logs" ]]; do
   logs_generated=$((logs_generated + 1))
   logs_per_second_count=$((logs_per_second_count + 1))
   
-  # Output the number of logs generated per second
   if [[ "$logs_per_second_count" -eq "$logs_per_second" ]]; then
     echo "Generated $logs_per_second_count logs"
     logs_per_second_count=0
   fi
-  echo "Logs/s: " `grep -c "$(date --date='1 hour ago' + '%b %d %H:%M:%S')" /var/log/syslog`
+  echo "Logs/s: " `grep -c "$(date --date='1 hour ago' +'%b %d %H:%M:%S')" /var/log/messages`
   sleep "$sleep_duration"
 done
 
