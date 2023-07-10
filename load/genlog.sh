@@ -51,7 +51,7 @@ function report {
     echo "Estimated Duration " $estimated_duration
     echo "Real Duration      " $duration
 
-    $result = "$logs_generated,$real_logs_per_second,$total_size_bytes,$duration_secs"
+    result="$logs_generated,$real_logs_per_second,$total_size_bytes,$duration_secs"
     echo $result > /var/log/$CONTAINER_NAME.log
     exit 0
 }
