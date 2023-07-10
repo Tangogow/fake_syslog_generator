@@ -12,7 +12,7 @@ ip="172.0.0."
 name="gll"
 image="gll"
 network="gll" 
-volume="/var/lib/docker/volumes/logs/_data"
+volume="/var/lib/docker/volumes/var/log/_data"
 
 function usage {
     echo "
@@ -58,10 +58,10 @@ if [[ $action == "gen" ]]; then
     fi
 fi
 
-logsGenerated=0
-realLogsPerSecond=0
-totalSizeBytes=0
-durationSecs=0
+logs_generated=0
+real_logs_per_second=0
+total_size_bytes=0
+duration_secs=0
 
 function formatDuration {
     seconds=$1
@@ -106,21 +106,21 @@ elif [[ $action == "logs" ]]; then
     for file in $(ls $volume); do
         while IFS=',' read -ra values; do
             if [[ ${#values[@]} -eq 4 ]]; then
-                logsGenerated=$((logsGenerated + values[0]))
-                realLogsPerSecond=$((realLogsPerSecond + values[1]))
-                totalSizeBytes=$((totalSizeBytes + values[2]))
-                if [[ values[3] -gt $durationSecs ]]; then
-                    durationSecs=${values[3]}
+                logs_generated=$((logs_generated + values[0]))
+                real_logs_per_second=$((real_logs_per_second + values[1]))
+                total_size_bytes=$((total_size_bytes + values[2]))
+                if [[ values[3] -gt $duration_secs ]]; then
+                    duration_secs=${values[3]}
                 fi
             fi
         done < "$file"
     done
     echo "=== FAKE LOG REPORT ==="
     echo "Number container   $(ls -1 $volume | wc -l)"
-    echo "Logs generated     $logsGenerated"
-    echo "Logs/s             $realLogsPerSecond"
-    echo "Total size         $(formatSize $totalSizeBytes)"
-    echo "Duration           $(formatDuration $durationSecs)"
+    echo "Logs generated     $logs_generated"
+    echo "Logs/s             $real_logs_per_second"
+    echo "Total size         $(formatSize $total_size_bytes)"
+    echo "Duration           $(formatDuration $duration_secs)"
     exit 0
 fi
 
@@ -139,17 +139,17 @@ for (( i=rangeMin; i<=rangeMax; i++ )); do
         docker rm $name$i 2> /dev/null
         echo "Container $name$i removed"
     elif [[ $action == "create" ]]; then
-        docker create --name $name$i --ip $ip$i -v logs:/logs --network $network -e NAME=$name$i -ti $image
+        docker create --name $name$i --ip $ip$i -v logs:/var/log --network $network -e CONTAINER_NAME=$name$i -ti $image
         echo "Container $name$i created"
     elif [[ $action == "recreate" ]]; then
         docker kill $name$i 2> /dev/null
         docker rm $name$i 2> /dev/null
-        docker run --name $name$i --ip $ip$i -v logs:/logs --network $network -e NAME=$name$i -tid $image
+        docker run --name $name$i --ip $ip$i -v logs:/var/log --network $network -e CONTAINER_NAME=$name$i -tid $image
         echo "Container $name$i recreated"
     elif [[ $action == "run" ]]; then
         docker kill $name$i 2> /dev/null
         docker rm $name$i 2> /dev/null
-        docker run --name $name$i --ip $ip$i -v logs:/logs --network $network -e NAME=$name$i -tid $image
+        docker run --name $name$i --ip $ip$i -v logs:/var/log --network $network -e CONTAINER_NAME=$name$i -tid $image
         echo "Container $name$i created and running"
     elif [[ $action == "exec" ]]; then
         docker exec -d $name$i bash -c "$execCommand"

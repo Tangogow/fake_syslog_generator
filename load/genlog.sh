@@ -20,29 +20,39 @@ log_size=$3
 logs_generated=0
 
 function report {
-    duration=$((end_time - start_time))
+    duration=$(($end_time - $start_time))
+    duration_secs=$duration
     if [ $duration -lt 60 ]; then
         duration=$duration" secs"
     elif [ $duration -lt 3600 ]; then
-        duration=$((duration / 60))" mins"
+        duration=$(($duration / 60))" mins"
     else
-        duration=$((duration / 3600))" hours"
+        duration=$(($duration / 3600))" hours"
     fi
+    estimated_duration=$(($logs_generated / $logs_per_second))
+    real_logs_per_second=$(($logs_generated / $duration_secs))
     total_size=$(($logs_generated * $log_size))
+    total_size_bytes=$total_size
     if [ $total_size -lt 1024 ]; then
         total_size=$total_size" B"
     elif [ $total_size -lt 1048576 ]; then
-        total_size=$((total_size / 1024))" KB"
+        total_size=$(($total_size / 1024))" KB"
     elif [ $total_size -lt 1073741824 ]; then
-        total_size=$((total_size / 1048576))" MB"
+        total_size=$(($total_size / 1048576))" MB"
     else
-        total_size=$((total_size / 1073741824))" GB"
+        total_size=$(($total_size / 1073741824))" GB"
     fi
+
     echo "===FAKE LOGS REPORT==="
-    echo "Logs generated  " $logs_generated
-    echo "Logs per second " $logs_per_second
-    echo "Total size      " $total_size
-    echo "Duration        " $duration
+    echo "Logs generated     " $logs_generated
+    echo "Wanted logs/s      " $logs_per_second
+    echo "Real logs/s        " $real_logs_per_second
+    echo "Total size         " $total_size
+    echo "Estimated Duration " $estimated_duration
+    echo "Real Duration      " $duration
+
+    $result = "$logs_generated,$real_logs_per_second,$total_size_bytes,$duration_secs"
+    echo $result > /var/log/$CONTAINER_NAME.log
     exit 0
 }
 
