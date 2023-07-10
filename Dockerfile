@@ -9,7 +9,7 @@ apt install -y rsyslog; \
 service rsyslog start; \
 touch /var/log/messages; \
 logger -f /var/log/messages; \
-chmod +x genlog.sh
+chmod +x /home/debian/genlog.sh
 
 #RUN "./genlog.sh 1000 10 100"
 ENTRYPOINT ["/bin/bash"]

@@ -50,7 +50,7 @@ function ctrl_c {
 }
 
 start_time=$(date +%s)
-logger -t FAKE -p user.info "===========FAKE LOGS============="
+
 function generate_log_entry {
   local message=""
   local current_length=0
@@ -77,7 +77,8 @@ while [[ "$logs_generated" -lt "$number_of_logs" ]]; do
     echo "Generated $logs_per_second_count logs"
     logs_per_second_count=0
   fi
-  echo "Logs/s: " `grep -c "$(date --date='1 hour ago' +'%b %d %H:%M:%S')" /var/log/messages`
+  echo "Logs/s: " `awk -v d1="$(date --date='-1 second' +'%b %d %H:%M:%S')" -v d2="$(date +'%b %d %H:%M:%S')" \
+'$0 > d1 && $0 < d2 || $0 ~ d2' /var/log/messages | wc -l`
   sleep "$sleep_duration"
 done
 
