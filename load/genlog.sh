@@ -90,7 +90,7 @@ while [[ "$logs_generated" -lt "$number_of_logs" ]]; do
     logs_per_second_count=0
   fi
   echo "Logs/s: " `awk -v d1="$(date --date='-1 second' +'%b %d %H:%M:%S')" -v d2="$(date +'%b %d %H:%M:%S')" \
-'$0 > d1 && $0 < d2 || $0 ~ d2' /var/log/messages | wc -l`
+'$0 > d1 && $0 < d2 || $0 ~ d2' /var/log/syslog | wc -l`
   sleep "$sleep_duration"
 done
 

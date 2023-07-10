@@ -19,7 +19,7 @@ Another purpose is to benchmark your network and/or your on premise infrastructu
 
 # How to start
 
-1. Create Docker network with `docker network create --gateway 172.0.255.254 --label gll --subnet 172.0.0.0/16`
+1. Create Docker network with `docker network create --gateway 172.0.255.254 --label gll --subnet 172.0.0.0/16 gll`
 2. Build the image with `docker build -t gll .`
 3. Launch your Docker cluster with `./gendocker.sh run 1 20` (for 20 container from n°1 to n°20). It take around half a second to launch one container.
 4. Connect all your containers with your SIEM. Your containers IP start at 172.0.0.1. (by default the number of the container = the last bytes of the IP). If you're launching more than 255 machines, the IPs will be automaticly incremented at 172.0.1.x and so on.

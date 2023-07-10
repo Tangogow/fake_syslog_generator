@@ -4,12 +4,12 @@ EXPOSE 514
 
 COPY "load" "/home/debian"
 WORKDIR "/home/debian"
-RUN apt update; \
+RUN apt update && \
 apt install -y rsyslog; \
-service rsyslog start; \
-touch /var/log/messages; \
-logger -f /var/log/messages; \
-chmod +x /home/debian/genlog.sh
+rm -f /var/log/syslog && touch /var/log/syslog; \
+logger -f /var/log/syslog; \
+chmod +x /home/debian/genlog.sh; \
+service rsyslog start || rsyslogd
 
 #RUN "./genlog.sh 1000 10 100"
 ENTRYPOINT ["/bin/bash"]
