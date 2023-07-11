@@ -113,7 +113,7 @@ elif [[ $action == "logs" ]]; then
                     duration_secs=${values[3]}
                 fi
             fi
-        done < "$file"
+        done < "$volume/$file"
     done
     echo "=== FAKE LOG REPORT ==="
     echo "Number container   $(ls -1 $volume | wc -l)"
