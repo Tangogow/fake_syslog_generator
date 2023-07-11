@@ -30,6 +30,8 @@ echo -e "if \$programname == 'FAKE' then $log_path\n& stop" > /etc/rsyslog.d/01-
 # force restart with a random PID to not overlap
 rsyslogd -i $((RANDOM % (65000 - 30000 + 1) + 30000)) 2> /dev/null
 
+rm /var/log/gll/$CONTAINER_NAME.log
+
 function report {
   duration=$(($end_time - $start_time))
   duration_secs=$duration
@@ -63,7 +65,7 @@ function report {
   echo "Real Duration      " $duration
 
   result="$logs_generated,$real_logs_per_second,$total_size_bytes,$duration_secs"
-  echo $result > /var/log/$CONTAINER_NAME.log
+  echo $result > /var/log/gll/$CONTAINER_NAME.log
   exit 0
 }
 

@@ -12,7 +12,7 @@ ip="172.0.0."
 name="gll"
 image="gll"
 network="gll" 
-volume="/var/lib/docker/volumes/var/log/_data"
+volume="/var/lib/docker/volumes/logs/_data"
 
 function usage {
     echo "
@@ -139,17 +139,17 @@ for (( i=rangeMin; i<=rangeMax; i++ )); do
         docker rm $name$i 2> /dev/null
         echo "Container $name$i removed"
     elif [[ $action == "create" ]]; then
-        docker create --name $name$i --ip $ip$i -v logs:/var/log --network $network -e CONTAINER_NAME=$name$i -ti $image
+        docker create --name $name$i --ip $ip$i -v logs:/var/log/gll --network $network -e CONTAINER_NAME=$name$i -ti $image
         echo "Container $name$i created"
     elif [[ $action == "recreate" ]]; then
         docker kill $name$i 2> /dev/null
         docker rm $name$i 2> /dev/null
-        docker run --name $name$i --ip $ip$i -v logs:/var/log --network $network -e CONTAINER_NAME=$name$i -tid $image
+        docker run --name $name$i --ip $ip$i -v logs:/var/log/gll --network $network -e CONTAINER_NAME=$name$i -tid $image
         echo "Container $name$i recreated"
     elif [[ $action == "run" ]]; then
         docker kill $name$i 2> /dev/null
         docker rm $name$i 2> /dev/null
-        docker run --name $name$i --ip $ip$i -v logs:/var/log --network $network -e CONTAINER_NAME=$name$i -tid $image
+        docker run --name $name$i --ip $ip$i -v logs:/var/log/gll --network $network -e CONTAINER_NAME=$name$i -tid $image
         echo "Container $name$i created and running"
     elif [[ $action == "exec" ]]; then
         docker exec -d $name$i bash -c "$execCommand"
