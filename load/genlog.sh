@@ -1,7 +1,7 @@
 #!/bin/bash
 
-if [[ $# -ne 3 ]]; then
-  echo "Usage: $0 <number_of_logs> <logs_per_second> <log_size> [<log_path>]"
+if [[ $# -lt 3 || $# -gt 4 ]]; then
+  echo -e "Usage: $0 <number_of_logs> <logs_per_second> <log_size> [<log_path>]\n"
   echo "You may be restricted by the number of logs per second, depending on your OS and disk IO's"
   echo "logs_per_second: in seconds (minimum 1)"
   echo "log_size: in bytes for each log entry"
@@ -22,6 +22,7 @@ logs_generated=0
 
 if [ -z "$log_path" ]; then
   $log_path="/var/log/messages"
+fi
 if [ ! -f "$log_path" ]; then
   touch $log_path
 fi
