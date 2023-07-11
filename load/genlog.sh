@@ -1,10 +1,11 @@
 #!/bin/bash
 
 if [[ $# -ne 3 ]]; then
-  echo "Usage: $0 <number_of_logs> <logs_per_second> <log_size>"
+  echo "Usage: $0 <number_of_logs> <logs_per_second> <log_size> [<log_path>]"
   echo "You may be restricted by the number of logs per second, depending on your OS and disk IO's"
   echo "logs_per_second: in seconds (minimum 1)"
   echo "log_size: in bytes for each log entry"
+  echo "log_path: the path of your log file. By default /var/log/messages (optional)"
   exit 1
 fi
 
@@ -16,8 +17,15 @@ service rsyslog start || rsyslogd # forcing
 number_of_logs=$1
 logs_per_second=$2
 log_size=$3
-
+log_path=$4
 logs_generated=0
+
+if [ -z "$log_path" ]; then
+  $log_path="/var/log/messages"
+if [ ! -f "$log_path" ]; then
+  touch $log_path
+fi
+logger -f $log_path
 
 function report {
     duration=$(($end_time - $start_time))
