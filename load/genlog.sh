@@ -12,8 +12,6 @@ fi
 # trap Ctrl+C to display report
 trap ctrl_c INT
 
-service rsyslog start || rsyslogd # forcing
-
 number_of_logs=$1
 logs_per_second=$2
 log_size=$3
@@ -26,9 +24,11 @@ fi
 if [ ! -f "$log_path" ]; then
   touch $log_path
 fi
-echo "*.* $log_path" > /etc/rsyslog.d/logger.conf
+echo "if $programname == 'FAKE' then $log_path & stop" > /etc/rsyslog.d/logger.conf
 logger -f $log_path
-service rsyslog start || rsyslogd
+
+# force restart with a random PID to not overlap
+rsyslogd -i $((RANDOM % (65000 - 30000 + 1) + 30000))
 
 function report {
   duration=$(($end_time - $start_time))
