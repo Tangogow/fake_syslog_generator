@@ -24,11 +24,11 @@ fi
 if [ ! -f "$log_path" ]; then
   touch $log_path
 fi
-echo "if $programname == 'FAKE' then $log_path & stop" > /etc/rsyslog.d/logger.conf
-logger -f $log_path
+echo -e "if \$programname == 'FAKE' then $log_path\n& stop" > /etc/rsyslog.d/01-logger.conf
+#logger -f $log_path
 
 # force restart with a random PID to not overlap
-rsyslogd -i $((RANDOM % (65000 - 30000 + 1) + 30000))
+rsyslogd -i $((RANDOM % (65000 - 30000 + 1) + 30000)) 2> /dev/null
 
 function report {
   duration=$(($end_time - $start_time))
@@ -91,6 +91,7 @@ function generate_log_entry {
 sleep_duration=$(awk "BEGIN {print 1/$logs_per_second}")
 
 # Generate logs until the desired number is reached
+echo "Generating logs..."
 while [[ "$logs_generated" -lt "$number_of_logs" ]]; do
   generate_log_entry
   logs_generated=$((logs_generated + 1))
@@ -100,8 +101,9 @@ while [[ "$logs_generated" -lt "$number_of_logs" ]]; do
     echo "Generated $logs_per_second_count logs"
     logs_per_second_count=0
   fi
-  echo "Logs/s: " `awk -v d1="$(date --date='-1 second' +'%b %d %H:%M:%S')" -v d2="$(date +'%b %d %H:%M:%S')" \
-'$0 > d1 && $0 < d2 || $0 ~ d2' $log_path | wc -l`
+  #echo "Logs/s: " `awk -v d1="$(date --date='-1 second' +'%b %d %H:%M:%S')" -v d2="$(date +'%b %d %H:%M:%S')" \
+  #'$0 > d1 && $0 < d2 || $0 ~ d2' $log_path | wc -l`
+  echo "Log n°" $logs_generated
   sleep "$sleep_duration"
 done
 
