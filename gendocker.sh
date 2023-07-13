@@ -2,11 +2,11 @@
 
 # Parsing Args
 action=$1
-rangeMin=$2
-rangeMax=$3
-logNumber=$4
-logPerSecond=$5
-logSize=$6
+range_min=$2
+range_max=$3
+log_number=$4
+log_per_second=$5
+log_size=$6
 
 ip="172.0.0."
 name="gll"
@@ -37,30 +37,32 @@ if [[ ! " ${actionArray[@]} " =~ " ${action} " ]]; then
 fi
 
 if [[ $action == "exec" ]]; then
-    execCommand=$4
-    logNumber=""
+    exec_command=$4
+    log_number=""
 fi
 
-if [[ -z $rangeMax ]]; then
-    rangeMax=$rangeMin
+if [[ -z $range_max ]]; then
+    range_max=$range_min
 fi
-if [[ $rangeMin -lt 1 || $rangeMax -lt 1 ]]; then
+if [[ $range_min -lt 1 || $range_max -lt 1 ]]; then
     echo "Wrong range. Need postive integers"
     usage
-elif [[ $rangeMin -gt $rangeMax ]]; then
+elif [[ $range_min -gt $range_max ]]; then
     echo "Wrong range. Rangemax should be higher than rangemin"
     usage
 fi
 if [[ $action == "gen" ]]; then
-    if [[ $logNumber -lt 1 || $logPerSecond -lt 1 || $logSize -lt 1 ]]; then
+    if [[ $log_number -lt 1 || $log_per_second -lt 1 || $log_size -lt 1 ]]; then
         echo "Wrong number of logs and/or logs per second and/or size. Need postive integers"
         usage
     fi
 fi
 
 logs_generated=0
+wanted_logs_per_second=0
 real_logs_per_second=0
 total_size_bytes=0
+estimated_duration=0
 duration_secs=0
 
 function formatDuration {
@@ -77,18 +79,18 @@ function formatDuration {
 }
 
 function formatSize {
-    totalSize=$1
-    if [[ $totalSize -lt 1024 ]]; then
-        echo "$totalSize B"
-    elif [[ $totalSize -lt 1048576 ]]; then
-        totalSize=$(round $totalSize/1024)
-        echo "$totalSize KB"
-    elif [[ $totalSize -lt 1073741824 ]]; then
-        totalSize=$(round $totalSize/1048576)
-        echo "$totalSize MB"
+    total_size=$1
+    if [[ $total_size -lt 1024 ]]; then
+        echo "$total_size B"
+    elif [[ $total_size -lt 1048576 ]]; then
+        total_size=$(round $total_size/1024)
+        echo "$total_size KB"
+    elif [[ $total_size -lt 1073741824 ]]; then
+        total_size=$(round $total_size/1048576)
+        echo "$total_size MB"
     else
-        totalSize=$(round $totalSize/1073741824)
-        echo "$totalSize GB"
+        total_size=$(round $total_size/1073741824)
+        echo "$total_size GB"
     fi
 }
 
@@ -99,7 +101,7 @@ function round {
 if [[ $action == "gen" ]]; then
     rm -f $volume/*
 elif [[ $action == "logs" ]]; then
-    while [[ $(ls -1 $volume | wc -l) -ne $((rangeMax - rangeMin + 1)) ]]; do
+    while [[ $(ls -1 $volume | wc -l) -ne $((range_max - range_min + 1)) ]]; do
         echo "Waiting for logs... Logs present: $(ls -1 $volume | wc -l)"
         sleep 1
     done
@@ -110,10 +112,10 @@ elif [[ $action == "logs" ]]; then
                 wanted_logs_per_second=$((wanted_logs_per_second + values[1]))
                 real_logs_per_second=$((real_logs_per_second + values[2]))
                 total_size_bytes=$((total_size_bytes + values[3]))
-                if [[ values[3] -gt $real_duration_secs ]]; then # get max value
-                    real_duration_secs=${values[4]}
+                if [[ values[4] -gt $estimated_duration_secs ]]; then # get max value
+                    estimated_duration_secs=${values[4]}
                 fi
-                if [[ values[3] -gt $real_duration_secs ]]; then
+                if [[ values[5] -gt $real_duration_secs ]]; then
                     real_duration_secs=${values[5]}
                 fi
             fi
@@ -123,6 +125,7 @@ elif [[ $action == "logs" ]]; then
     echo "Number container   " $(ls -1 $volume | wc -l)
     echo "Logs generated     " $logs_generated
     echo "Wanted Log/s       " $wanted_logs_per_second
+    echo "Log side           " $(formatSize $log_size)
     echo "Logs/s             " $real_logs_per_second
     echo "Total size         " $(formatSize $total_size_bytes)
     echo "Estimated Duration " $(formatDuration $estimated_duration_secs)
@@ -130,7 +133,7 @@ elif [[ $action == "logs" ]]; then
     exit 0
 fi
 
-for (( i=rangeMin; i<=rangeMax; i++ )); do
+for (( i=range_min; i<=range_max; i++ )); do
     if [[ $action == "start" ]]; then
         docker start $name$i
         echo "Container $name$i started"
@@ -158,13 +161,16 @@ for (( i=rangeMin; i<=rangeMax; i++ )); do
         docker run --name $name$i --ip $ip$i -v logs:/var/log/gll --network $network -e CONTAINER_NAME=$name$i -tid $image
         echo "Container $name$i created and running"
     elif [[ $action == "exec" ]]; then
-        docker exec -d $name$i bash -c "$execCommand"
-        echo "Command $execCommand injected in container $name$i"
+        docker exec -d $name$i bash -c "$exec_command"
+        echo "Command $exec_command injected in container $name$i"
     elif [[ $action == "gen" ]]; then
-        docker exec -d $name$i bash -c "./genlog.sh $logNumber $logPerSecond $logSize"
+        docker exec -d $name$i bash -c "./genlog.sh $log_number $log_per_second $log_size"
         echo "Generating logs in container $name$i"
     fi
 done
+if [[ $action == "gen" ]]; then
+    echo "Estimated duration: " $(formatDuration $(($logs_number / $logs_per_second)))
+fi
 if [[ $action == "run" || $action == "create" ]]; then
     docker ps
 fi
