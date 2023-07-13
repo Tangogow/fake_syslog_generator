@@ -5,7 +5,7 @@ action=$1
 range_min=$2
 range_max=$3
 log_number=$4
-log_per_second=$5
+logs_per_second=$5
 log_size=$6
 
 ip="172.0.0."
@@ -52,7 +52,7 @@ elif [[ $range_min -gt $range_max ]]; then
     usage
 fi
 if [[ $action == "gen" ]]; then
-    if [[ $log_number -lt 1 || $log_per_second -lt 1 || $log_size -lt 1 ]]; then
+    if [[ $log_number -lt 1 || $logs_per_second -lt 1 || $log_size -lt 1 ]]; then
         echo "Wrong number of logs and/or logs per second and/or size. Need postive integers"
         usage
     fi
@@ -107,7 +107,7 @@ elif [[ $action == "logs" ]]; then
     done
     for file in $(ls $volume); do
         while IFS=',' read -ra values; do
-            if [[ ${#values[@]} -eq 4 ]]; then
+            if [[ ${#values[@]} -eq 6 ]]; then
                 logs_generated=$((logs_generated + values[0]))
                 wanted_logs_per_second=$((wanted_logs_per_second + values[1]))
                 real_logs_per_second=$((real_logs_per_second + values[2]))
@@ -125,7 +125,6 @@ elif [[ $action == "logs" ]]; then
     echo "Number container   " $(ls -1 $volume | wc -l)
     echo "Logs generated     " $logs_generated
     echo "Wanted Log/s       " $wanted_logs_per_second
-    echo "Log side           " $(formatSize $log_size)
     echo "Logs/s             " $real_logs_per_second
     echo "Total size         " $(formatSize $total_size_bytes)
     echo "Estimated Duration " $(formatDuration $estimated_duration_secs)
@@ -164,12 +163,12 @@ for (( i=range_min; i<=range_max; i++ )); do
         docker exec -d $name$i bash -c "$exec_command"
         echo "Command $exec_command injected in container $name$i"
     elif [[ $action == "gen" ]]; then
-        docker exec -d $name$i bash -c "./genlog.sh $log_number $log_per_second $log_size"
+        docker exec -d $name$i bash -c "./genlog.sh $log_number $logs_per_second $log_size"
         echo "Generating logs in container $name$i"
     fi
 done
 if [[ $action == "gen" ]]; then
-    echo "Estimated duration: " $(formatDuration $(($logs_number / $logs_per_second)))
+    echo "Estimated duration: " $(formatDuration $(($log_number / $logs_per_second)))
 fi
 if [[ $action == "run" || $action == "create" ]]; then
     docker ps
