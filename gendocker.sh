@@ -93,7 +93,7 @@ function formatSize {
 }
 
 function round {
-    printf "%.0f" $1
+    printf "%.0f" $(($1))
 }
 
 if [[ $action == "gen" ]]; then
@@ -107,20 +107,26 @@ elif [[ $action == "logs" ]]; then
         while IFS=',' read -ra values; do
             if [[ ${#values[@]} -eq 4 ]]; then
                 logs_generated=$((logs_generated + values[0]))
-                real_logs_per_second=$((real_logs_per_second + values[1]))
-                total_size_bytes=$((total_size_bytes + values[2]))
-                if [[ values[3] -gt $duration_secs ]]; then
-                    duration_secs=${values[3]}
+                wanted_logs_per_second=$((wanted_logs_per_second + values[1]))
+                real_logs_per_second=$((real_logs_per_second + values[2]))
+                total_size_bytes=$((total_size_bytes + values[3]))
+                if [[ values[3] -gt $real_duration_secs ]]; then # get max value
+                    real_duration_secs=${values[4]}
+                fi
+                if [[ values[3] -gt $real_duration_secs ]]; then
+                    real_duration_secs=${values[5]}
                 fi
             fi
         done < "$volume/$file"
     done
     echo "=== FAKE LOG REPORT ==="
-    echo "Number container   $(ls -1 $volume | wc -l)"
-    echo "Logs generated     $logs_generated"
-    echo "Logs/s             $real_logs_per_second"
-    echo "Total size         $(formatSize $total_size_bytes)"
-    echo "Duration           $(formatDuration $duration_secs)"
+    echo "Number container   " $(ls -1 $volume | wc -l)
+    echo "Logs generated     " $logs_generated
+    echo "Wanted Log/s       " $wanted_logs_per_second
+    echo "Logs/s             " $real_logs_per_second
+    echo "Total size         " $(formatSize $total_size_bytes)
+    echo "Estimated Duration " $(formatDuration $estimated_duration_secs)
+    echo "Real Duration      " $(formatDuration $real_duration_secs)
     exit 0
 fi
 
