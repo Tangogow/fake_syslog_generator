@@ -14,8 +14,10 @@ image="gll"
 network="gll" 
 volume="/var/lib/docker/volumes/logs/_data"
 
-max_logs_per_second=70 # may vary from one host to another
-max_container_per_ms=800 # 0.8/secs but bash doesn't support floating vars
+# The following vars may vary from one host to another
+max_logs_per_ms=70000 # 70/sec 
+max_gen_per_ms=200 # 0.2/sec but bash doesn't support floating vars
+max_container_per_ms=1000 # 1.0/sec
 
 function usage {
     echo "
@@ -150,42 +152,39 @@ for (( i=range_min; i<=range_max; i++ )); do
         docker restart $name$i
         echo "Container $name$i restarted"
     elif [[ $action == "rm" ]]; then
-        docker kill $name$i > /dev/null
-        docker rm $name$i > /dev/null
+        docker kill $name$i &> /dev/null
+        docker rm $name$i &> /dev/null
         echo "Container $name$i removed"
     elif [[ $action == "create" ]]; then
         docker create --name $name$i --ip $ip -v logs:/var/log/gll --network $network -e CONTAINER_NAME=$name$i -ti $image > /dev/null
         echo "Container $name$i created ip: $ip"
     elif [[ $action == "recreate" ]]; then
-        docker kill $name$i > /dev/null
-        docker rm $name$i > /dev/null
+        docker kill $name$i &> /dev/null
+        docker rm $name$i &> /dev/null
         docker run --name $name$i --ip $ip -v logs:/var/log/gll --network $network -e CONTAINER_NAME=$name$i -tid $image > /dev/null
         echo "Container $name$i recreated  ip: $ip"
     elif [[ $action == "run" ]]; then
-        docker kill $name$i > /dev/null
-        docker rm $name$i > /dev/null
+        number_container=$(($range_max - $range_min))
+        echo "Estimated duration: " $(formatDuration $(($number_container / ($max_container_per_ms / 1000)))
+        docker kill $name$i &> /dev/null
+        docker rm $name$i &> /dev/null
         docker run --name $name$i --ip $ip -v logs:/var/log/gll --network $network -e CONTAINER_NAME=$name$i -tid $image > /dev/null
         echo "Container $name$i created and running  ip: $ip"
     elif [[ $action == "exec" ]]; then
         docker exec -d $name$i bash -c "$exec_command"
         echo "Command $exec_command injected in container $name$i"
     elif [[ $action == "gen" ]]; then
+        logs_per_ms=$(($logs_per_second * 1000))
+        if [[ $logs_per_ms -gt $max_logs_per_ms ]]; then
+            estimated=$max_logs_per_ms
+        else
+            estimated=$logs_per_ms
+        fi
+        echo "Estimated duration: " $(formatDuration $(((($log_number / $estimated) * $max_gen_per_ms) / 1000))
         docker exec -d $name$i bash -c "./genlog.sh $log_number $logs_per_second $log_size"
         echo "Generating logs in container $name$i"
     fi
 done
-if [[ $action == "gen" ]]; then
-    if [[ $logs_per_second -gt $max_logs_per_second ]]; then
-        estimated=$(($logs_number / $max_logs_per_second))
-    else
-        estimated=$logs_per_second
-    fi
-    echo "Estimated duration: " $(formatDuration $(($log_number / $estimated)))
-fi
-elif [[ $action == "run" ]]; then
-    number_container=$(($rangemax - $rangemin))
-    echo "Estimated duration: " $(formatDuration $(($number_container / ($max_container_per_ms / 1000)))
-fi
 if [[ $action == "run" || $action == "create" ]]; then
     docker ps
 fi
