@@ -151,17 +151,17 @@ for (( i=range_min; i<=range_max; i++ )); do
         docker rm $name$i 2> /dev/null
         echo "Container $name$i removed"
     elif [[ $action == "create" ]]; then
-        docker create --name $name$i --ip $ip$i -v logs:/var/log/gll --network $network -e CONTAINER_NAME=$name$i -ti $image
+        docker create --name $name$i --ip $ip -v logs:/var/log/gll --network $network -e CONTAINER_NAME=$name$i -ti $image
         echo "Container $name$i created"
     elif [[ $action == "recreate" ]]; then
         docker kill $name$i 2> /dev/null
         docker rm $name$i 2> /dev/null
-        docker run --name $name$i --ip $ip$i -v logs:/var/log/gll --network $network -e CONTAINER_NAME=$name$i -tid $image > /dev/null
+        docker run --name $name$i --ip $ip -v logs:/var/log/gll --network $network -e CONTAINER_NAME=$name$i -tid $image > /dev/null
         echo "Container $name$i recreated"
     elif [[ $action == "run" ]]; then
         docker kill $name$i 2> /dev/null
         docker rm $name$i 2> /dev/null
-        docker run --name $name$i --ip $ip$i -v logs:/var/log/gll --network $network -e CONTAINER_NAME=$name$i -tid $image > /dev/null
+        docker run --name $name$i --ip $ip -v logs:/var/log/gll --network $network -e CONTAINER_NAME=$name$i -tid $image > /dev/null
         echo "Container $name$i created and running"
     elif [[ $action == "exec" ]]; then
         docker exec -d $name$i bash -c "$exec_command"
