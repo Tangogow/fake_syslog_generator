@@ -33,6 +33,22 @@ Once all container launched, you can regenerate logs at will instantaneously
 
 Depending on the machine, the number of logs per second may vary from what you wished for. Usually, logger can only output on average 70 syslogs per seconds.
 
+# Benchmark
+
+Benchmark with 1000 logs on each container at the rate 100 logs/s with 10KB of logs, on a 127vCPU 256GB RAM machine.
+
+The number of logs on each container doesn't impact much, rather the number of container.
+
+You'll generate way more faster load with a high load of log and a low number of container than a high number of container with very low load of logs.
+
+| Number of containers | 10 | 100 | 1000 | 10000 | Average |
+| :-: | :-: | :-: | :-: | :-: | :-: |
+| Create and run container | 10sec | 1min20 | 14min | 2h30 | 0,8 container/sec |
+| Generate log | 2sec | 20sec | 5 mins | 50mins | 0,3 container log/sec |
+| Eetrieve log | 12sec | 50sec | 6 mins | 1h | 0,4 logs/sec |
+| Total size | 10MB | 100MB | 1GB | 10GB | 10KB/logs * 1000 logs/container |
+
+*Retrieve log duration include the generate log duration*
 
 # Limitation
 
@@ -54,5 +70,7 @@ A server with 128 vCPU and 250GB of RAM will allow you to simulate:
 
 # Issues
 
-May have issues with different syslog format or date locale format.
-Used locale is `US_us` and default syslog format is `%b %d %H:%M:%S` 
+* May have issues with different syslog format or date locale format.
+Used locale is `US_us` and default syslog format is `%b %d %H:%M:%S`
+
+* Due to the technical limitations of Docker, it is impossible to efficiently thread (in C or Python) the `docker exec` command used for the `gen`, as well as the `docker run` command used for the `run`

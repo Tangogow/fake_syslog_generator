@@ -14,6 +14,9 @@ image="gll"
 network="gll" 
 volume="/var/lib/docker/volumes/logs/_data"
 
+max_logs_per_second=70 # may vary from one host to another
+max_container_per_ms=800 # 0.8/secs but bash doesn't support floating vars
+
 function usage {
     echo "
 Usage: ./gendocker.sh <start|stop|restart|create|rm|recreate|run|exec|gen|logs> <rangemin> <rangemax> [<number_of_logs> <logs_per_seconde> <size_of_logs>]
@@ -147,20 +150,20 @@ for (( i=range_min; i<=range_max; i++ )); do
         docker restart $name$i
         echo "Container $name$i restarted"
     elif [[ $action == "rm" ]]; then
-        docker kill $name$i 2> /dev/null
-        docker rm $name$i 2> /dev/null
+        docker kill $name$i > /dev/null
+        docker rm $name$i > /dev/null
         echo "Container $name$i removed"
     elif [[ $action == "create" ]]; then
         docker create --name $name$i --ip $ip -v logs:/var/log/gll --network $network -e CONTAINER_NAME=$name$i -ti $image > /dev/null
         echo "Container $name$i created ip: $ip"
     elif [[ $action == "recreate" ]]; then
-        docker kill $name$i 2> /dev/null
-        docker rm $name$i 2> /dev/null
+        docker kill $name$i > /dev/null
+        docker rm $name$i > /dev/null
         docker run --name $name$i --ip $ip -v logs:/var/log/gll --network $network -e CONTAINER_NAME=$name$i -tid $image > /dev/null
         echo "Container $name$i recreated  ip: $ip"
     elif [[ $action == "run" ]]; then
-        docker kill $name$i 2> /dev/null
-        docker rm $name$i 2> /dev/null
+        docker kill $name$i > /dev/null
+        docker rm $name$i > /dev/null
         docker run --name $name$i --ip $ip -v logs:/var/log/gll --network $network -e CONTAINER_NAME=$name$i -tid $image > /dev/null
         echo "Container $name$i created and running  ip: $ip"
     elif [[ $action == "exec" ]]; then
@@ -172,7 +175,16 @@ for (( i=range_min; i<=range_max; i++ )); do
     fi
 done
 if [[ $action == "gen" ]]; then
-    echo "Estimated duration: " $(formatDuration $(($log_number / $logs_per_second)))
+    if [[ $logs_per_second -gt $max_logs_per_second ]]; then
+        estimated=$(($logs_number / $max_logs_per_second))
+    else
+        estimated=$logs_per_second
+    fi
+    echo "Estimated duration: " $(formatDuration $(($log_number / $estimated)))
+fi
+elif [[ $action == "run" ]]; then
+    number_container=$(($rangemax - $rangemin))
+    echo "Estimated duration: " $(formatDuration $(($number_container / ($max_container_per_ms / 1000)))
 fi
 if [[ $action == "run" || $action == "create" ]]; then
     docker ps
