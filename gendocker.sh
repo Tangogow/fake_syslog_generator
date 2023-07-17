@@ -8,7 +8,7 @@ log_number=$4
 logs_per_second=$5
 log_size=$6
 
-ip="172.0.0."
+ip="172.0."
 name="gll"
 image="gll"
 network="gll" 
@@ -132,7 +132,19 @@ elif [[ $action == "logs" ]]; then
     exit 0
 fi
 
+digit3=0
+digit4=0
+function ip_increment(i) {
+    ip="$ip.$digit3.$digit4"
+    digit4=$(($digit4 + 1))
+    if [[ $digit4 -gt 255]]; then
+        $digit3=$(($digit3 + 1))
+        $digit4=0
+    fi
+}
+
 for (( i=range_min; i<=range_max; i++ )); do
+    ip_increment $i
     if [[ $action == "start" ]]; then
         docker start $name$i
         echo "Container $name$i started"
@@ -152,12 +164,12 @@ for (( i=range_min; i<=range_max; i++ )); do
     elif [[ $action == "recreate" ]]; then
         docker kill $name$i 2> /dev/null
         docker rm $name$i 2> /dev/null
-        docker run --name $name$i --ip $ip$i -v logs:/var/log/gll --network $network -e CONTAINER_NAME=$name$i -tid $image
+        docker run --name $name$i --ip $ip$i -v logs:/var/log/gll --network $network -e CONTAINER_NAME=$name$i -tid $image > /dev/null
         echo "Container $name$i recreated"
     elif [[ $action == "run" ]]; then
         docker kill $name$i 2> /dev/null
         docker rm $name$i 2> /dev/null
-        docker run --name $name$i --ip $ip$i -v logs:/var/log/gll --network $network -e CONTAINER_NAME=$name$i -tid $image
+        docker run --name $name$i --ip $ip$i -v logs:/var/log/gll --network $network -e CONTAINER_NAME=$name$i -tid $image > /dev/null
         echo "Container $name$i created and running"
     elif [[ $action == "exec" ]]; then
         docker exec -d $name$i bash -c "$exec_command"
