@@ -8,7 +8,7 @@ log_number=$4
 logs_per_second=$5
 log_size=$6
 
-ip="172.0."
+ip_prefix="172.0"
 name="gll"
 image="gll"
 network="gll" 
@@ -132,19 +132,11 @@ elif [[ $action == "logs" ]]; then
     exit 0
 fi
 
-digit3=0
-digit4=0
-function ip_increment(i) {
-    ip="$ip.$digit3.$digit4"
-    digit4=$(($digit4 + 1))
-    if [[ $digit4 -gt 255]]; then
-        $digit3=$(($digit3 + 1))
-        $digit4=0
-    fi
-}
-
 for (( i=range_min; i<=range_max; i++ )); do
-    ip_increment $i
+    #ip_increment $i
+    digit3=$(($i / 256))
+    digit4=$(($i % 256))
+    ip="$ip_prefix.$digit3.$digit4"
     if [[ $action == "start" ]]; then
         docker start $name$i
         echo "Container $name$i started"
