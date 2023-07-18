@@ -73,4 +73,6 @@ A server with 128 vCPU and 250GB of RAM will allow you to simulate:
 * May have issues with different syslog format or date locale format.
 Used locale is `US_us` and default syslog format is `%b %d %H:%M:%S`
 
+* Docker-compose performance are quite the same (with the scale option) and doesn't offer native functionnality to perform this kind of task, but could be a more sustainable way to perform.
+
 * Due to the technical limitations of Docker, it is impossible to efficiently thread (in C or Python) the `docker exec` command used for the `gen`, as well as the `docker run` command used for the `run`

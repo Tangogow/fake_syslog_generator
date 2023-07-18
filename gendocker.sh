@@ -137,6 +137,19 @@ elif [[ $action == "logs" ]]; then
     exit 0
 fi
 
+if [[ $action == "run" ]]; then
+        number_container=$(($range_max - $range_min))
+        echo "Estimated duration: " $(formatDuration $(($number_container / ($max_container_per_ms / 1000)))
+elif [[ $action == "gen" ]]; then
+    logs_per_ms=$(($logs_per_second * 1000))
+    if [[ $logs_per_ms -gt $max_logs_per_ms ]]; then
+        estimated=$max_logs_per_ms
+    else
+        estimated=$logs_per_ms
+    fi
+    echo "Estimated duration: " $(formatDuration $(((($log_number / $estimated) * $max_gen_per_ms) / 1000)))
+fi
+
 for (( i=range_min; i<=range_max; i++ )); do
     #ip_increment $i
     digit3=$(($i / 256))
@@ -180,7 +193,7 @@ for (( i=range_min; i<=range_max; i++ )); do
         else
             estimated=$logs_per_ms
         fi
-        echo "Estimated duration: " $(formatDuration $(((($log_number / $estimated) * $max_gen_per_ms) / 1000))
+        echo "Estimated duration: " $(formatDuration $(((($log_number / $estimated) * $max_gen_per_ms) / 1000)))
         docker exec -d $name$i bash -c "./genlog.sh $log_number $logs_per_second $log_size"
         echo "Generating logs in container $name$i"
     fi
