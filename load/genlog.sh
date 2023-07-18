@@ -16,6 +16,7 @@ number_of_logs=$1
 logs_per_second=$2
 log_size=$3
 log_path=$4
+remote_server=$5 # format ip:port
 logs_generated=0
 
 if [ -z "$log_path" ]; then
@@ -24,10 +25,14 @@ fi
 if [ ! -f "$log_path" ]; then
   touch $log_path
 fi
-echo -e "if \$programname == 'FAKE' then $log_path\n& stop" > /etc/rsyslog.d/01-logger.conf
+if [ -z "$remote_server" ]; then
+  echo -e "if \$programname == 'FAKE' then $log_path\n& stop" > /etc/rsyslog.d/01-logger.conf
+else
+  echo -e "if \$programname == 'FAKE' then $log_path\nif \$programname == 'FAKE' then @@$remote_server& stop" > /etc/rsyslog.d/01-logger.conf
+fi
 #logger -f $log_path
 
-# force restart with a random PID to not overlap
+# force restart with a random PID to not overlap since systemctl, service and lsof don't work
 rsyslogd -i $((RANDOM % (65000 - 30000 + 1) + 30000)) 2> /dev/null
 
 rm /var/log/gll/$CONTAINER_NAME.log
@@ -77,7 +82,7 @@ function ctrl_c {
 start_time=$(date +%s)
 
 function generate_log_entry {
-  local message=""
+  local message="$CONTAINER_NAME "
   local current_length=0
 
   # Append random data until log size is reached

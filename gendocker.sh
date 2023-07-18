@@ -8,11 +8,13 @@ log_number=$4
 logs_per_second=$5
 log_size=$6
 
-ip_prefix="172.0"
+ip_prefix="172.0" # 172.0.0.0/16
 name="gll"
 image="gll"
-network="gll" 
+network="gll"
+log_path="/var/log/messages" # inside
 volume="/var/lib/docker/volumes/logs/_data"
+syslog_server="172.0.255.254" # gateway
 
 # The following vars may vary from one host to another
 max_logs_per_ms=70000 # 70/sec 
@@ -151,7 +153,6 @@ elif [[ $action == "gen" ]]; then
 fi
 
 for (( i=range_min; i<=range_max; i++ )); do
-    #ip_increment $i
     digit3=$(($i / 256))
     digit4=$(($i % 256))
     ip="$ip_prefix.$digit3.$digit4"
@@ -192,7 +193,7 @@ for (( i=range_min; i<=range_max; i++ )); do
         else
             estimated=$logs_per_ms
         fi
-        docker exec -d $name$i bash -c "./genlog.sh $log_number $logs_per_second $log_size"
+        docker exec -d $name$i bash -c "./genlog.sh $log_number $logs_per_second $log_size $log_path $syslog_server"
         echo "Generating logs in container $name$i"
     fi
 done
