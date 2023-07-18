@@ -139,7 +139,7 @@ fi
 
 if [[ $action == "run" ]]; then
         number_container=$(($range_max - $range_min))
-        echo "Estimated duration: " $(formatDuration $(($number_container / ($max_container_per_ms / 1000)))
+        echo "Estimated duration: " $(formatDuration $(($number_container / ($max_container_per_ms / 1000))))
 elif [[ $action == "gen" ]]; then
     logs_per_ms=$(($logs_per_second * 1000))
     if [[ $logs_per_ms -gt $max_logs_per_ms ]]; then
@@ -178,7 +178,6 @@ for (( i=range_min; i<=range_max; i++ )); do
         echo "Container $name$i recreated  ip: $ip"
     elif [[ $action == "run" ]]; then
         number_container=$(($range_max - $range_min))
-        echo "Estimated duration: " $(formatDuration $(($number_container / ($max_container_per_ms / 1000)))
         docker kill $name$i &> /dev/null
         docker rm $name$i &> /dev/null
         docker run --name $name$i --ip $ip -v logs:/var/log/gll --network $network -e CONTAINER_NAME=$name$i -tid $image > /dev/null
@@ -193,7 +192,6 @@ for (( i=range_min; i<=range_max; i++ )); do
         else
             estimated=$logs_per_ms
         fi
-        echo "Estimated duration: " $(formatDuration $(((($log_number / $estimated) * $max_gen_per_ms) / 1000)))
         docker exec -d $name$i bash -c "./genlog.sh $log_number $logs_per_second $log_size"
         echo "Generating logs in container $name$i"
     fi
