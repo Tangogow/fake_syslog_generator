@@ -5,7 +5,7 @@ if [[ $# -lt 3 || $# -gt 4 ]]; then
   echo "You may be restricted by the number of logs per second, depending on your OS and disk IO's"
   echo "logs_per_second: in seconds (minimum 1)"
   echo "log_size: in bytes for each log entry"
-  echo "log_path: the path of your log file. By default /var/log/messages (optional)"
+  echo "log_path: the path of your log file. By default use /var/log/messages"
   exit 1
 fi
 
@@ -19,9 +19,6 @@ log_path=$4
 remote_server=$5 # format ip:port
 logs_generated=0
 
-if [ -z "$log_path" ]; then
-  log_path="/var/log/messages"
-fi
 if [ ! -f "$log_path" ]; then
   touch $log_path
 fi

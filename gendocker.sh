@@ -14,7 +14,7 @@ image="gll"
 network="gll"
 log_path="/var/log/messages" # inside
 volume="/var/lib/docker/volumes/logs/_data"
-syslog_server="172.0.255.254" # gateway
+syslog_server="172.0.255.254:514" # gateway
 
 # The following vars may vary from one host to another
 max_logs_per_ms=70000 # 70/sec 
