@@ -25,7 +25,7 @@ if [ ! -f "$log_path" ]; then
 fi
 if [ -z "$remote_server" ]; then # copying FAKE logs to the provided path
   echo -e "if \$programname == 'FAKE' then $log_path\n& stop" > /etc/rsyslog.d/01-logger.conf
-else
+else # may not work
   echo -e "if \$programname == 'FAKE' then $log_path\nif \$programname == 'FAKE' then @@$remote_server& stop" > /etc/rsyslog.d/01-logger.conf
 fi
 #logger -f $log_path
@@ -91,6 +91,10 @@ function generate_log_entry {
   done
 
   logger -t FAKE -p user.info "$message"
+  if [ -v "$remote_server" ]; then
+    IFS=':' read -r ip port <<< "$remote_server" # split ip:port string in half
+    logger -t FAKE -p user.info -n $ip -P $port -T "$message"
+  fi
 }
 
 sleep_duration=$(awk "BEGIN {print 1/$logs_per_second}")
@@ -102,13 +106,13 @@ while [[ "$logs_generated" -lt "$number_of_logs" ]]; do
   logs_generated=$((logs_generated + 1))
   logs_per_second_count=$((logs_per_second_count + 1))
 
+  echo "Log n°" $logs_generated
   if [[ "$logs_per_second_count" -eq "$logs_per_second" ]]; then
     echo "Generated $logs_per_second_count logs"
     logs_per_second_count=0
   fi
   #echo "Logs/s: " `awk -v d1="$(date --date='-1 second' +'%b %d %H:%M:%S')" -v d2="$(date +'%b %d %H:%M:%S')" \
   #'$0 > d1 && $0 < d2 || $0 ~ d2' $log_path | wc -l`
-  echo "Log n°" $logs_generated
   sleep "$sleep_duration"
 done
 
