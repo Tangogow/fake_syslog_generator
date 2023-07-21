@@ -91,7 +91,7 @@ function generate_log_entry {
   done
 
   logger -t FAKE -p user.info "$message"
-  if [ -v "$remote_server" ]; then
+  if ! [[ -z "$remote_server" ]]; then
     IFS=':' read -r ip port <<< "$remote_server" # split ip:port string in half
     logger -t FAKE -p user.info -n $ip -P $port -T "$message"
   fi
