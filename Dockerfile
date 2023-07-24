@@ -2,7 +2,7 @@ FROM debian:latest
 
 EXPOSE 514
 
-COPY "load" "/home/debian"
+COPY "genlog.sh" "/home/debian"
 WORKDIR "/home/debian"
 RUN apt update && apt install -y rsyslog
 RUN chmod +x /home/debian/genlog.sh

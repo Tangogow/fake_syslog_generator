@@ -19,6 +19,7 @@ log_size=$3
 log_path=$4
 remote_server=$5 # format ip:port
 logs_generated=0
+include_ip=true # include IP at the beginning of the log
 
 if [ ! -f "$log_path" ]; then
   touch $log_path
@@ -80,7 +81,11 @@ function ctrl_c {
 start_time=$(date +%s)
 
 function generate_log_entry {
-  local message="$CONTAINER_NAME "
+
+  local message=""
+  if [[ $include_ip == true ]]; then
+    local message="$(hostname -I) "
+  fi
   local current_length=0
 
   # Append random data until log size is reached

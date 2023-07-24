@@ -170,18 +170,18 @@ for (( i=range_min; i<=range_max; i++ )); do
         docker rm $name$i &> /dev/null
         echo "Container $name$i removed"
     elif [[ $action == "create" ]]; then
-        docker create --name $name$i --ip $ip -v logs:/var/log/gll --network $network -e CONTAINER_NAME=$name$i -ti $image > /dev/null
+        docker create --name $name$i --hostname $name$i--ip $ip -v logs:/var/log/gll --network $network -e CONTAINER_NAME=$name$i -ti $image > /dev/null
         echo "Container $name$i created ip: $ip"
     elif [[ $action == "recreate" ]]; then
         docker kill $name$i &> /dev/null
         docker rm $name$i &> /dev/null
-        docker run --name $name$i --ip $ip -v logs:/var/log/gll --network $network -e CONTAINER_NAME=$name$i -tid $image > /dev/null
+        docker run --name $name$i --hostname $name$i--ip $ip -v logs:/var/log/gll --network $network -e CONTAINER_NAME=$name$i -tid $image > /dev/null
         echo "Container $name$i recreated  ip: $ip"
     elif [[ $action == "run" ]]; then
         number_container=$(($range_max - $range_min))
         docker kill $name$i &> /dev/null
         docker rm $name$i &> /dev/null
-        docker run --name $name$i --ip $ip -v logs:/var/log/gll --network $network -e CONTAINER_NAME=$name$i -tid $image > /dev/null
+        docker run --name $name$i --hostname $name$i--ip $ip -v logs:/var/log/gll --network $network -e CONTAINER_NAME=$name$i -tid $image > /dev/null
         echo "Container $name$i created and running  ip: $ip"
     elif [[ $action == "exec" ]]; then
         docker exec -d $name$i bash -c "$exec_command"
