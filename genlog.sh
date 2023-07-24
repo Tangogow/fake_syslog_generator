@@ -34,6 +34,9 @@ fi
 # force restart with a random PID to not overlap since systemctl, service and lsof don't work
 rsyslogd -i $((RANDOM % (65000 - 30000 + 1) + 30000)) 2> /dev/null
 
+if [[ -z $CONTAINER_NAME ]]; then
+  export CONTAINER_NAME="gll"
+fi
 rm /var/log/gll/$CONTAINER_NAME.log
 
 function report {
