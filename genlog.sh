@@ -89,14 +89,7 @@ function generate_log_entry {
   if [[ $include_ip == true ]]; then
     local message="$(hostname -I) "
   fi
-  local current_length=0
-
-  # Append random data until log size is reached
-  while [[ "$current_length" -lt "$log_size" ]]; do
-    local random_data=$(head -c $((log_size - current_length)) /dev/urandom | tr -dc 'a-zA-Z0-9')
-    message+="$random_data"
-    current_length=${#message}
-  done
+  message=$(tr -dc 'a-zA-Z0-9' < /dev/urandom | fold -w $log_size | head -n 1)
 
   logger -t FAKE -p user.info "$message"
   if ! [[ -z "$remote_server" ]]; then
