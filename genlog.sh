@@ -26,7 +26,7 @@ if [ ! -f "$log_path" ]; then
 fi
 if [ -z "$remote_server" ]; then # copying FAKE logs to the provided path
   echo -e "if \$programname == 'FAKE' then $log_path\n& stop" > /etc/rsyslog.d/01-logger.conf
-else # may not work
+else
   echo -e "if \$programname == 'FAKE' then $log_path\nif \$programname == 'FAKE' then @@$remote_server& stop" > /etc/rsyslog.d/01-logger.conf
 fi
 #logger -f $log_path
@@ -71,7 +71,7 @@ function report {
   echo "Estimated Duration " $estimated_duration
   echo "Real Duration      " $duration
 
-  result="$logs_generated,$logs_per_second,$real_logs_per_second,$total_size_bytes,$estimated_duration,$duration_secs"
+  local result="$logs_generated,$logs_per_second,$real_logs_per_second,$total_size_bytes,$estimated_duration,$duration_secs"
   echo $result > /var/log/gll/$CONTAINER_NAME.log
   exit 0
 }
@@ -83,13 +83,13 @@ function ctrl_c {
 
 start_time=$(date +%s)
 
-function generate_log_entry {
+function generate_message {
 
-  local message=""
+  message=""
   if [[ $include_ip == true ]]; then
-    local message="$(hostname -I) "
+    message="$(hostname -I) "
   fi
-  message=$(tr -dc 'a-zA-Z0-9' < /dev/urandom | fold -w $log_size | head -n 1)
+  message="$message "$(tr -dc 'a-zA-Z0-9' < /dev/urandom | fold -w $log_size | head -n 1)
 
   logger -t FAKE -p user.info "$message"
   if ! [[ -z "$remote_server" ]]; then
@@ -98,24 +98,28 @@ function generate_log_entry {
   fi
 }
 
-sleep_duration=$(awk "BEGIN {print 1/$logs_per_second}")
+function generate_log {
+  sleep_duration=$(awk "BEGIN {print 1/$logs_per_second}")
 
-# Generate logs until the desired number is reached
-echo "Generating logs..."
-while [[ "$logs_generated" -lt "$number_of_logs" ]]; do
-  generate_log_entry
-  logs_generated=$((logs_generated + 1))
-  logs_per_second_count=$((logs_per_second_count + 1))
+  # Generate logs until the desired number is reached
+  echo "Generating logs..."
+  while [[ "$logs_generated" -lt "$number_of_logs" ]]; do
+    generate_message
+    logs_generated=$((logs_generated + 1))
+    logs_per_second_count=$((logs_per_second_count + 1))
 
-  echo "Log n°" $logs_generated
-  if [[ "$logs_per_second_count" -eq "$logs_per_second" ]]; then
-    echo "Generated $logs_per_second_count logs"
-    logs_per_second_count=0
-  fi
-  #echo "Logs/s: " `awk -v d1="$(date --date='-1 second' +'%b %d %H:%M:%S')" -v d2="$(date +'%b %d %H:%M:%S')" \
-  #'$0 > d1 && $0 < d2 || $0 ~ d2' $log_path | wc -l`
-  sleep "$sleep_duration"
-done
+    echo "Log n°" $logs_generated
+    if [[ "$logs_per_second_count" -eq "$logs_per_second" ]]; then
+      echo "Generated $logs_per_second_count logs"
+      logs_per_second_count=0
+    fi
+    #echo "Logs/s: " `awk -v d1="$(date --date='-1 second' +'%b %d %H:%M:%S')" -v d2="$(date +'%b %d %H:%M:%S')" \
+    #'$0 > d1 && $0 < d2 || $0 ~ d2' $log_path | wc -l`
+    sleep "$sleep_duration"
+  done
 
-end_time=$(date +%s)
-report
+  end_time=$(date +%s)
+  report
+}
+
+generate_log
