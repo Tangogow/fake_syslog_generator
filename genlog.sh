@@ -37,7 +37,7 @@ rsyslogd -i $((RANDOM % (65000 - 30000 + 1) + 30000)) 2> /dev/null
 if [[ -z $CONTAINER_NAME ]]; then
   export CONTAINER_NAME="gll"
 fi
-rm /var/log/gll/$CONTAINER_NAME.log
+rm /var/log/gll/$CONTAINER_NAME.log 2> /dev/null
 
 function report {
   duration=$(($end_time - $start_time))
@@ -72,7 +72,7 @@ function report {
   echo "Real Duration      " $duration
 
   local result="$logs_generated,$logs_per_second,$real_logs_per_second,$total_size_bytes,$estimated_duration,$duration_secs"
-  echo $result > /var/log/gll/$CONTAINER_NAME.log
+  echo $result > /var/log/gll/$CONTAINER_NAME.log 2> /dev/null
   exit 0
 }
 
