@@ -1,12 +1,12 @@
 #!/bin/bash
 
 if [[ $# -lt 4 || $# -gt 5 ]]; then
-  echo -e "Usage: $0 <number_of_logs> <logs_per_second> <log_size> [<log_path>]\n"
-  echo "You may be restricted by the number of logs per second, depending on your OS and disk IO's"
+  echo -e "Usage: $0 <number_of_logs> <logs_per_second> <log_size> <log_path> [<remote_server>]\n"
   echo "logs_per_second: in seconds (minimum 1)"
   echo "log_size: in bytes for each log entry"
   echo "log_path: the path of your log file. By default use /var/log/messages"
-  echo "remote_server: remote syslog server ip with port. ie: 192.168.0.1:514 (optional)"
+  echo "remote_server: forward your logs to a remote syslog server ip:port ie: 192.168.0.1:514 (optional)"
+  echo "You may be restricted by the number of logs per second, depending on your OS and disk IO's"
   exit 1
 fi
 

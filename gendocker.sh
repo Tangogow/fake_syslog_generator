@@ -23,7 +23,7 @@ max_container_per_ms=1000 # 1.0/sec
 
 function usage {
     echo "
-Usage: ./gendocker.sh <start|stop|restart|create|rm|recreate|run|exec|gen|logs> <rangemin> <rangemax> [<number_of_logs> <logs_per_seconde> <size_of_logs>]
+Usage: ./gendocker.sh <start|stop|restart|create|rm|recreate|run|exec|gen|logs> <rangemin> <rangemax> [<number_of_logs> <logs_per_second> <size_of_logs>]
 Example: 
     ./gendocker.sh run 1 20                   Create and start 20 containers
     ./gendocker.sh gen 1 20 10000 100 100     Generate 10000 logs of 100 bytes at the rate of 100 logs/s on each container
