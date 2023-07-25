@@ -20,9 +20,18 @@ log_path=$4
 remote_server=$5 # format ip:port
 logs_generated=0
 include_ip=true # include IP at the beginning of the log
+result_path="/var/log/gll/" 
 
 if [ ! -f "$log_path" ]; then
   touch $log_path
+fi
+if [[ -z $CONTAINER_NAME ]]; then
+  export CONTAINER_NAME="gll"
+fi
+rm /var/log/gll/$CONTAINER_NAME.log 2> /dev/null
+if [ ! -f "$result_path/$CONTAINER_NAME.log" ]; then
+  mkdir $result_path
+  touch $CONTAINER_NAME.log
 fi
 if [ -z "$remote_server" ]; then # copying FAKE logs to the provided path
   echo -e "if \$programname == 'FAKE' then $log_path\n& stop" > /etc/rsyslog.d/01-logger.conf
@@ -34,10 +43,7 @@ fi
 # force restart with a random PID to not overlap since systemctl, service and lsof don't work
 rsyslogd -i $((RANDOM % (65000 - 30000 + 1) + 30000)) 2> /dev/null
 
-if [[ -z $CONTAINER_NAME ]]; then
-  export CONTAINER_NAME="gll"
-fi
-rm /var/log/gll/$CONTAINER_NAME.log 2> /dev/null
+
 
 function report {
   duration=$(($end_time - $start_time))
@@ -84,7 +90,6 @@ function ctrl_c {
 start_time=$(date +%s)
 
 function generate_message {
-
   message=""
   if [[ $include_ip == true ]]; then
     message="$(hostname -I) "
